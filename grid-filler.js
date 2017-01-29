@@ -1,5 +1,11 @@
 "use strict";
 
+let grid;
+let squareSize = 253;
+let nbColumns;
+let nbLines;
+let keyCurrentlyDown = [];
+
 window.addEventListener('load', function() {
 	screen.mozlockOrientation = "landscape-secondary";
 
@@ -22,18 +28,69 @@ window.addEventListener('load', function() {
 	canvas.height = screenHeight;
 
 	canvas.focus();
+	addEvents(canvas);
+	initGrid(canvas);
 	drawGrid(context, canvas);
 });
 
+function addEvents(canvas)
+{
+	canvas.addEventListener("mousemove", mousemoveHandler, false);
+	canvas.addEventListener("keydown", keydownHandler, false);
+	canvas.addEventListener("keyup", keyupHandler, false);
+}
+
+function mousemoveHandler(event)
+{
+	console.log(event.pageX, event.pageY);
+}
+
+function keydownHandler(event)
+{
+	// prevent backspace key from navigating back
+	if (event.keyCode === 8) {
+		event.preventDefault();
+	}
+	console.log(event.keyCode + event.charCode);
+}
+
+function keyupHandler(event)
+{
+	// prevent backspace key from navigating back
+	if (event.keyCode === 8) {
+		event.preventDefault();
+	}
+	console.log(event.keyCode + event.charCode);	
+}
+
+let privateEnum = {
+	empty: 0,
+	border: 1
+}
+
+function initGrid(canvas)
+{
+	squareSize = 253;
+	nbColumns = Math.floor(canvas.width / squareSize);
+	nbLines = Math.floor(canvas.height / squareSize);
+	grid = new Int8Array(nbColumns*nbLines);
+	for (let i = 0; i < nbColumns; i++) {
+		for (let j = 0; j < nbLines; j++) {
+			grid[j*nbColumns + i] = privateEnum.empty;
+		}
+	}
+	grid[3] = privateEnum.border;
+}
+
 function drawGrid(ctx, canvas)
 {
+	ctx.save();
 	ctx.translate(0.5, 0.5);
-	let squareSize = 253;
-	let width = canvas.width - canvas.width % squareSize;
-	let height = canvas.height - canvas.height % squareSize;
+	let width = nbColumns * squareSize;
+	let height = nbLines * squareSize;
 
-	ctx.fillStyle = "#CCCCCC";
-	ctx.fillRect(0, 0, width + 1, height + 1);
+	drawSqares(ctx, privateEnum.empty, "#CCCCCC");
+	drawSqares(ctx, privateEnum.border, "#AAAACC");
 
 	ctx.strokeStyle = "#000000";
 	// -1 because of translation of 0.5
@@ -42,5 +99,18 @@ function drawGrid(ctx, canvas)
 	}
 	for (let j = 0; j <= height; j += squareSize) {
 		ctx.strokeRect(0, j, width, 0);
+	}
+	ctx.restore();
+}
+
+function drawSqares(ctx, type, color)
+{
+	ctx.fillStyle = color;
+	for (let i = 0; i < nbColumns; i++) {
+		for (let j = 0; j < nbLines; j++) {
+			if (grid[j*nbColumns+i] === type) {
+				ctx.fillRect(i*squareSize, j*squareSize, squareSize, squareSize);
+			}
+		}
 	}
 }
