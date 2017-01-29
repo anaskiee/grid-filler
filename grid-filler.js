@@ -194,6 +194,8 @@ function checkDirection(i, j, direction)
 {
 	let currI = i;
 	let currJ = j;
+	let prevI = i;
+	let prevJ = j;
 	while (true) {
 		if (direction.indexOf("top") !== -1)
 			currJ--;
@@ -207,6 +209,15 @@ function checkDirection(i, j, direction)
 			return false;
 		if (grid[currJ*nbColumns + currI] === privateEnum.inner || grid[currJ*nbColumns + currI] === privateEnum.border)
 			return true;
+		if (direction.indexOf("-") !== -1) {
+			let index = currJ*nbColumns + prevI;
+			let index2 = prevJ*nbColumns + currI;
+			if ((grid[index] === privateEnum.inner || grid[index] === privateEnum.border) &&
+				(grid[index2] === privateEnum.inner || grid[index2] === privateEnum.border))
+				return true;
+		}
+		prevI = currI;
+		prevJ = currJ;
 	}
 }
 
@@ -214,6 +225,8 @@ function setDirectionInner(i, j, direction, toExplore)
 {
 	let currI = i;
 	let currJ = j;
+	let prevI = i;
+	let prevJ = j;
 	while (true) {
 		if (direction.indexOf("top") !== -1)
 			currJ--;
@@ -226,6 +239,16 @@ function setDirectionInner(i, j, direction, toExplore)
 
 		if (grid[currJ*nbColumns + currI] === privateEnum.inner || grid[currJ*nbColumns + currI] === privateEnum.border)
 			return;
+
+		if (direction.indexOf("-") !== -1) {
+			let index = currJ*nbColumns + prevI;
+			let index2 = prevJ*nbColumns + currI;
+			if ((grid[index] === privateEnum.inner || grid[index] === privateEnum.border) &&
+				(grid[index2] === privateEnum.inner || grid[index2] === privateEnum.border))
+				return;
+		}
+		prevI = currI;
+		prevJ = currJ;
 		
 		grid[currJ*nbColumns + currI] = privateEnum.inner;
 		toExplore.push(i);
