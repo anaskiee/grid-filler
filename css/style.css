@@ -1,0 +1,15 @@
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-size: 1rem;
+  background: #fff;
+  overflow: hidden;
+}
+
+canvas {
+	display: block;
+	outline: 0;
+}
