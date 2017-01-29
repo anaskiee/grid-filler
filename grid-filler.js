@@ -3,7 +3,7 @@
 let ctx;
 let canvas;
 let grid;
-let squareSize = 25;
+let squareSize = 15;
 let nbColumns;
 let nbLines;
 let keyCurrentlyDown = new Set();
@@ -67,8 +67,14 @@ function keydownHandler(event)
 	if (event.keyCode === 8) {
 		event.preventDefault();
 	}
-	console.log("add: " + (event.keyCode + event.charCode));
-	keyCurrentlyDown.add(event.keyCode + event.charCode);
+	let eventCode = event.keyCode + event.charCode;
+	if (eventCode === 13) {
+		fillGrid();
+		return;
+	}
+
+	console.log("add: " + eventCode);
+	keyCurrentlyDown.add(eventCode);
 	let fakeEvent = {pageX: currX, pageY: currY};
 	mousemoveHandler(fakeEvent);
 }
@@ -155,4 +161,74 @@ function clearGrid()
 		}
 	}
 	drawGrid();
+}
+
+function fillGrid()
+{
+	console.log("Start filling grid");
+	let toExplore = [];
+	// Find starting inner points
+	for (let i = 0; i < nbColumns; i++) {
+		for (let j = 0; j < nbLines; j++) {
+			if (grid[j*nbColumns+i] === privateEnum.inner) {
+				toExplore.push(i);
+				toExplore.push(j);
+			}
+		}
+	}
+
+	let directions = ["top", "bottom", "left", "right", "top-right", "top-left", "bottom-right", "bottom-left"];
+	while (toExplore.length !== 0) {
+		let i = toExplore.shift();
+		let j = toExplore.shift();
+		for (let direction of directions) {
+			if (checkDirection(i, j, direction)) {
+				setDirectionInner(i, j, direction, toExplore);
+			}
+		}		
+	}
+	drawGrid();
+}
+
+function checkDirection(i, j, direction)
+{
+	let currI = i;
+	let currJ = j;
+	while (true) {
+		if (direction.indexOf("top") !== -1)
+			currJ--;
+		if (direction.indexOf("bottom") !== -1)
+			currJ++;
+		if (direction.indexOf("left") !== -1)
+			currI--;
+		if (direction.indexOf("right") !== -1)
+			currI++;
+		if (currI < 0 || currI >= nbColumns-1 || currJ < 0 || currJ >= nbLines-1)
+			return false;
+		if (grid[currJ*nbColumns + currI] === privateEnum.inner || grid[currJ*nbColumns + currI] === privateEnum.border)
+			return true;
+	}
+}
+
+function setDirectionInner(i, j, direction, toExplore)
+{
+	let currI = i;
+	let currJ = j;
+	while (true) {
+		if (direction.indexOf("top") !== -1)
+			currJ--;
+		if (direction.indexOf("bottom") !== -1)
+			currJ++;
+		if (direction.indexOf("left") !== -1)
+			currI--;
+		if (direction.indexOf("right") !== -1)
+			currI++;
+
+		if (grid[currJ*nbColumns + currI] === privateEnum.inner || grid[currJ*nbColumns + currI] === privateEnum.border)
+			return;
+		
+		grid[currJ*nbColumns + currI] = privateEnum.inner;
+		toExplore.push(i);
+		toExplore.push(j);
+	}
 }
