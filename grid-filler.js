@@ -1,23 +1,30 @@
 "use strict";
 
+let ctx;
+let canvas;
 let grid;
-let squareSize = 253;
+let squareSize = 96;
 let nbColumns;
 let nbLines;
-let keyCurrentlyDown = [];
+let keyCurrentlyDown = new Set();
+
+let privateEnum = {
+	empty: 0,
+	border: 1
+};
 
 window.addEventListener('load', function() {
 	screen.mozlockOrientation = "landscape-secondary";
 
 	// Get man canvas
-	var canvas = document.getElementById("grid-filler");
+	canvas = document.getElementById("grid-filler");
 	if (!canvas) {
 		alert("Impossible to get the main canvas");
 		return;
 	}
 
-	var context = canvas.getContext("2d");
-	if (!context) {
+	ctx = canvas.getContext("2d");
+	if (!ctx) {
 		alert("Impossible to get context of canvas");
 		return;
 	}
@@ -28,12 +35,12 @@ window.addEventListener('load', function() {
 	canvas.height = screenHeight;
 
 	canvas.focus();
-	addEvents(canvas);
-	initGrid(canvas);
-	drawGrid(context, canvas);
+	addEvents();
+	initGrid();
+	drawGrid();
 });
 
-function addEvents(canvas)
+function addEvents()
 {
 	canvas.addEventListener("mousemove", mousemoveHandler, false);
 	canvas.addEventListener("keydown", keydownHandler, false);
@@ -42,7 +49,10 @@ function addEvents(canvas)
 
 function mousemoveHandler(event)
 {
-	console.log(event.pageX, event.pageY);
+	if (keyCurrentlyDown.has(32)) {
+		console.log(event.pageX, event.pageY);
+		setBorderIfNeeded(event.pageX, event.pageY);
+	}
 }
 
 function keydownHandler(event)
@@ -51,7 +61,8 @@ function keydownHandler(event)
 	if (event.keyCode === 8) {
 		event.preventDefault();
 	}
-	console.log(event.keyCode + event.charCode);
+	console.log("add: " + (event.keyCode + event.charCode));
+	keyCurrentlyDown.add(event.keyCode + event.charCode);
 }
 
 function keyupHandler(event)
@@ -60,17 +71,22 @@ function keyupHandler(event)
 	if (event.keyCode === 8) {
 		event.preventDefault();
 	}
-	console.log(event.keyCode + event.charCode);	
+	console.log("delete: " + (event.keyCode + event.charCode));
+	keyCurrentlyDown.delete(event.keyCode + event.charCode);	
 }
 
-let privateEnum = {
-	empty: 0,
-	border: 1
+function setBorderIfNeeded(x, y) {
+	let column = Math.floor(x / squareSize);
+	let line = Math.floor(y / squareSize);
+	if (grid[line*nbColumns + column] !== privateEnum.border) {
+		console.log("coord [" + line + "," + column + "] is now a border");
+		grid[line*nbColumns + column] = privateEnum.border;
+		drawGrid();
+	}
 }
 
-function initGrid(canvas)
+function initGrid()
 {
-	squareSize = 253;
 	nbColumns = Math.floor(canvas.width / squareSize);
 	nbLines = Math.floor(canvas.height / squareSize);
 	grid = new Int8Array(nbColumns*nbLines);
@@ -79,18 +95,17 @@ function initGrid(canvas)
 			grid[j*nbColumns + i] = privateEnum.empty;
 		}
 	}
-	grid[3] = privateEnum.border;
 }
 
-function drawGrid(ctx, canvas)
+function drawGrid()
 {
 	ctx.save();
 	ctx.translate(0.5, 0.5);
 	let width = nbColumns * squareSize;
 	let height = nbLines * squareSize;
 
-	drawSqares(ctx, privateEnum.empty, "#CCCCCC");
-	drawSqares(ctx, privateEnum.border, "#AAAACC");
+	drawSqares(privateEnum.empty, "#CCCCCC");
+	drawSqares(privateEnum.border, "#AAAACC");
 
 	ctx.strokeStyle = "#000000";
 	// -1 because of translation of 0.5
@@ -103,7 +118,7 @@ function drawGrid(ctx, canvas)
 	ctx.restore();
 }
 
-function drawSqares(ctx, type, color)
+function drawSqares(type, color)
 {
 	ctx.fillStyle = color;
 	for (let i = 0; i < nbColumns; i++) {
@@ -113,4 +128,14 @@ function drawSqares(ctx, type, color)
 			}
 		}
 	}
+}
+
+function clearGrid()
+{
+	for (let i = 0; i < nbColumns; i++) {
+		for (let j = 0; j < nbLines; j++) {
+			grid[j*nbColumns+i] = privateEnum.empty;
+		}
+	}
+	drawGrid();
 }
