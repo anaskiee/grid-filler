@@ -183,7 +183,7 @@ function fillGrid()
 		let j = toExplore.shift();
 		for (let direction of directions) {
 			if (checkDirection(i, j, direction)) {
-				setDirectionInner(i, j, direction, toExplore);
+				setDirectionInner(i, j, direction);
 			}
 		}		
 	}
@@ -221,7 +221,7 @@ function checkDirection(i, j, direction)
 	}
 }
 
-function setDirectionInner(i, j, direction, toExplore)
+function setDirectionInner(i, j, direction)
 {
 	let currI = i;
 	let currJ = j;
@@ -251,7 +251,5 @@ function setDirectionInner(i, j, direction, toExplore)
 		prevJ = currJ;
 		
 		grid[currJ*nbColumns + currI] = privateEnum.inner;
-		toExplore.push(i);
-		toExplore.push(j);
 	}
 }
