@@ -205,7 +205,7 @@ function checkDirection(i, j, direction)
 			currI--;
 		if (direction.indexOf("right") !== -1)
 			currI++;
-		if (currI < 0 || currI >= nbColumns-1 || currJ < 0 || currJ >= nbLines-1)
+		if (currI < 0 || currI > nbColumns-1 || currJ < 0 || currJ > nbLines-1)
 			return false;
 		if (grid[currJ*nbColumns + currI] === privateEnum.inner || grid[currJ*nbColumns + currI] === privateEnum.border)
 			return true;
