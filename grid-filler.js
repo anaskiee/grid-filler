@@ -3,14 +3,17 @@
 let ctx;
 let canvas;
 let grid;
-let squareSize = 96;
+let squareSize = 25;
 let nbColumns;
 let nbLines;
 let keyCurrentlyDown = new Set();
+let currX;
+let currY;
 
 let privateEnum = {
 	empty: 0,
-	border: 1
+	border: 1,
+	inner: 2
 };
 
 window.addEventListener('load', function() {
@@ -49,9 +52,12 @@ function addEvents()
 
 function mousemoveHandler(event)
 {
-	if (keyCurrentlyDown.has(32)) {
-		console.log(event.pageX, event.pageY);
+	currX = event.pageX;
+	currY = event.pageY;
+	if (keyCurrentlyDown.has(32)) { // space
 		setBorderIfNeeded(event.pageX, event.pageY);
+	} else if (keyCurrentlyDown.has(73)) { // i
+		setInner(event.pageX, event.pageY);
 	}
 }
 
@@ -63,6 +69,8 @@ function keydownHandler(event)
 	}
 	console.log("add: " + (event.keyCode + event.charCode));
 	keyCurrentlyDown.add(event.keyCode + event.charCode);
+	let fakeEvent = {pageX: currX, pageY: currY};
+	mousemoveHandler(fakeEvent);
 }
 
 function keyupHandler(event)
@@ -83,6 +91,14 @@ function setBorderIfNeeded(x, y) {
 		grid[line*nbColumns + column] = privateEnum.border;
 		drawGrid();
 	}
+}
+
+function setInner(x, y)
+{
+	let column = Math.floor(x / squareSize);
+	let line = Math.floor(y / squareSize);
+	grid[line*nbColumns + column] = privateEnum.inner;
+	drawGrid();
 }
 
 function initGrid()
@@ -106,6 +122,7 @@ function drawGrid()
 
 	drawSqares(privateEnum.empty, "#CCCCCC");
 	drawSqares(privateEnum.border, "#AAAACC");
+	drawSqares(privateEnum.inner, "#AACCAA");
 
 	ctx.strokeStyle = "#000000";
 	// -1 because of translation of 0.5
